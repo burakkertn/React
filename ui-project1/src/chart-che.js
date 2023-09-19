@@ -1,0 +1,125 @@
+import { useEffect, useState } from 'react';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+} from 'chart.js';
+import Navbar from './Components/index/index'
+import { Bar, Line } from 'react-chartjs-2';
+
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
+
+const options = {
+  indexAxis: 'x',
+  elements: {
+    bar: {
+      borderWidth: 2,
+    },
+  },
+  responsive: true,
+  plugins: {
+    legend: {
+      position: 'right',
+    },
+    title: {
+      display: true,
+      text: 'İsveç Frangı Chart Gösterimi',
+    },
+  },
+};
+
+const Horizontalchart = () => {
+  const [data, setData] = useState({
+    labels: [],
+    datasets: [
+      {
+        label: 'CHE',
+        data: [], // 'usd' verilerini burada kullanacağız
+        borderColor: 'rgb(53, 162, 235)',
+        backgroundColor: 'rgba(53, 162, 235, 0.5)',
+      },
+    ],
+  });
+
+  const [lineData, setLineData] = useState({
+    labels: [],
+    datasets: [
+      {
+        label: 'Başka Bir Veri Seti',
+        data: [], // 'usd' verilerini burada kullanacağız
+        borderColor: 'rgb(255, 99, 132)',
+        backgroundColor: 'rgba(255, 99, 132, 0.5)',
+      },
+    ],
+  });
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const url = 'https://localhost:44317/api/Doviz/che';
+
+      try {
+        const response = await fetch(url);
+        const apiData = await response.json();
+
+        const labels = apiData.map(item => item.date);
+        const usdData = apiData.map(item => item.che);
+
+        setData({
+          labels: labels,
+          datasets: [
+            {
+              label: 'CHE',
+              data: usdData,
+              borderColor: 'rgb(53, 162, 235)',
+              backgroundColor: 'rgba(53, 162, 235, 0.5)',
+            },
+          ],
+        });
+
+        // Başka bir veri seti için verileri alın
+        // Örnek olarak:
+        const lineUrl = 'https://localhost:44317/api/Doviz/che';
+        const lineResponse = await fetch(lineUrl);
+        const lineApiData = await lineResponse.json();
+
+        const lineLabels = lineApiData.map(item => item.date);
+        const lineDataPoints = lineApiData.map(item => item.che);
+
+        setLineData({
+          labels: lineLabels,
+          datasets: [
+            {
+              label: 'che',
+              data: lineDataPoints,
+              borderColor: 'rgb(255, 99, 132)',
+              backgroundColor: 'rgba(255, 99, 132, 0.5)',
+            },
+          ],
+        });
+      } catch (error) {
+        console.error('API isteği sırasında bir hata oluştu: ', error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  return (
+<div style={{ width: '100%', display: 'flex', flexDirection: 'row', padding: '50px' }}>
+<Navbar />
+  <div style={{ width: '40%' }}>
+    <Bar data={data} options={options} />
+  </div>
+  <div style={{ width: '40%' }}>
+    <Line data={lineData} options={options} />
+  </div>
+</div>
+
+  );
+};
+
+export default Horizontalchart;
